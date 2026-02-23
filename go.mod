@@ -2,7 +2,10 @@ module github.com/alligatorO15/taskMind
 
 go 1.24.0
 
-require github.com/spf13/viper v1.21.0
+require (
+	github.com/spf13/viper v1.21.0
+	go.mongodb.org/mongo-driver v1.17.9
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
