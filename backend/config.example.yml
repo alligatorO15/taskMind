@@ -1,0 +1,30 @@
+server:
+  port: 8080
+  mode: debug
+
+mongodb:
+  uri: mongodb://localhost:27017
+  databse: taskmind
+  timeout: 10s # макс время ожидания ответ от mongodb на любую операцию
+
+rabbitmq:
+  uri: amqp://guest:guest@localhost:5672/
+  exchange: taskmind.delayed
+  queue: taskmind.reminders
+  reconnect_delay: 5s # задержка перед повторными переподключениями, если rabbitmq недоступен
+
+jwt:
+  access_secret: taskmind-access-secret-key-change-in-prod
+  refresh_secret: taskmind-refresh-secret-key-change-in-prod
+  access_ttl: 15m
+  refresh_ttl: 168h # неделя
+
+reminder:
+  default_before: 30m # уведомлять за 30 мин до делайна о задаче
+  check_interval: 1m # интервал проверки просроченных задач
+
+websocket:
+  write_timeout: 10s # макс время серверу на отправку сообщения
+  read_timeout: 60s # макс время ожидания ответа от клиента
+  ping_interval: 54s # интервал с которым сервер будет пинговать клиента чтобы прверить живо ли соединение
+  pong_timeout: 60s # время, которео сервер дает клиенту на ответ после отправки ping
