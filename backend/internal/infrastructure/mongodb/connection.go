@@ -6,9 +6,10 @@ import (
 
 	"github.com/alligatorO15/taskMind/backend/internal/config"
 	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 // NewConnection — устанавливает подключение к MongoDB.
@@ -19,7 +20,7 @@ func NewConnection(cfg config.MongoDBConfig) (*mongo.Database, error) {
 	defer cancel()
 
 	clientOpts := options.Client().ApplyURI(cfg.URI)
-	client, err := mongo.Connect(ctx, clientOpts)
+	client, err := mongo.Connect(clientOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +42,7 @@ func CreateIndexes(db *mongo.Database) error {
 
 	// Уникальный индекс по email пользователя
 	_, err := db.Collection("users").Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys:    map[string]interface{}{"email": 1},
+		Keys:    bson.D{bson.E{Key: "email", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	})
 	if err != nil {
@@ -50,7 +51,7 @@ func CreateIndexes(db *mongo.Database) error {
 
 	// Уникальный индекс по username пользователя
 	_, err = db.Collection("users").Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys:    map[string]interface{}{"username": 1},
+		Keys:    bson.D{bson.E{Key: "username", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	})
 	if err != nil {
@@ -59,7 +60,10 @@ func CreateIndexes(db *mongo.Database) error {
 
 	// Индекс для поиска задач по user_id и статусу
 	_, err = db.Collection("tasks").Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys: map[string]interface{}{"user_id": 1, "status": 1},
+		Keys: bson.D{
+			bson.E{Key: "user_id", Value: 1},
+			bson.E{Key: "status", Value: 1},
+		},
 	})
 	if err != nil {
 		return err
@@ -67,7 +71,10 @@ func CreateIndexes(db *mongo.Database) error {
 
 	// Индекс для поиска задач по дедлайну (используется воркером напоминаний)
 	_, err = db.Collection("tasks").Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys: map[string]interface{}{"deadline": 1, "reminder_sent": 1},
+		Keys: bson.D{
+			bson.E{Key: "deadline", Value: 1},
+			bson.E{Key: "reminder_sent", Value: 1},
+		},
 	})
 	if err != nil {
 		return err
@@ -75,7 +82,7 @@ func CreateIndexes(db *mongo.Database) error {
 
 	// Индекс для поиска проектов по user_id
 	_, err = db.Collection("projects").Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys: map[string]interface{}{"user_id": 1},
+		Keys: bson.D{bson.E{Key: "user_id", Value: 1}},
 	})
 	if err != nil {
 		return err
@@ -83,7 +90,10 @@ func CreateIndexes(db *mongo.Database) error {
 
 	// Индекс для поиска уведомлений по user_id
 	_, err = db.Collection("notifications").Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys: map[string]interface{}{"user_id": 1, "created_at": -1},
+		Keys: bson.D{
+			bson.E{Key: "user_id", Value: 1},
+			bson.E{Key: "created_at", Value: -1},
+		},
 	})
 	if err != nil {
 		return err
