@@ -9,7 +9,6 @@ import (
 	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
 	"github.com/alligatorO15/taskMind/backend/internal/domain/repository"
 	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/rabbitmq"
 	"github.com/alligatorO15/taskMind/backend/pkg/apperror"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -19,7 +18,7 @@ import (
 type TaskUseCase struct {
 	taskRepo    repository.TaskRepository
 	projectRepo repository.ProjectRepository
-	rabbitConn  *rabbitmq.Connection
+	publisher   repository.ReminderPublisher
 	reminderCfg config.ReminderConfig
 }
 
@@ -27,13 +26,13 @@ type TaskUseCase struct {
 func NewTaskUseCase(
 	taskRepo repository.TaskRepository,
 	projectRepo repository.ProjectRepository,
-	rabbitConn *rabbitmq.Connection,
+	publisher repository.ReminderPublisher,
 	reminderCfg config.ReminderConfig,
 ) *TaskUseCase {
 	return &TaskUseCase{
 		taskRepo:    taskRepo,
 		projectRepo: projectRepo,
-		rabbitConn:  rabbitConn,
+		publisher:   publisher,
 		reminderCfg: reminderCfg,
 	}
 }
@@ -101,7 +100,7 @@ func (uc *TaskUseCase) Create(ctx context.Context, userID primitive.ObjectID, re
 	}
 
 	// Планирует напоминание через RabbitMQ, если есть дедлайн
-	if task.Deadline != nil && uc.rabbitConn != nil {
+	if task.Deadline != nil && uc.publisher != nil {
 		uc.scheduleReminder(ctx, task)
 	}
 
@@ -170,7 +169,7 @@ func (uc *TaskUseCase) Update(ctx context.Context, taskID, userID primitive.Obje
 	}
 
 	// Перепланируем напоминание, если изменился дедлайн
-	if deadlineChanged && task.Deadline != nil && uc.rabbitConn != nil {
+	if deadlineChanged && task.Deadline != nil && uc.publisher != nil {
 		uc.scheduleReminder(ctx, task)
 	}
 
@@ -219,7 +218,7 @@ func (uc *TaskUseCase) scheduleReminder(ctx context.Context, task *models.Task) 
 		Type:   string(models.NotificationTypeReminder),
 	}
 
-	if err := uc.rabbitConn.PublishReminder(ctx, msg, delay); err != nil {
+	if err := uc.publisher.PublishReminder(ctx, msg, delay); err != nil {
 		logger.Logger.Errorf("Не удалось запланировать напоминание для задачи %s: %v", task.ID.Hex(), err)
 	}
 

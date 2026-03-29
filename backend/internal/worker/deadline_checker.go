@@ -9,29 +9,28 @@ import (
 	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
 	"github.com/alligatorO15/taskMind/backend/internal/domain/repository"
 	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/rabbitmq"
 )
 
 // DeadlineChecker - фоновый воркер для периодической проверки просроченных задач
 // Сканирует базуу данных на наличие задач с прошедшим дедлайном ( и меняет статус на overdue потом отправляет уведомление пользователю)
 type DeadlineChecker struct {
-	rabbitConn       *rabbitmq.Connection
+	publisher        repository.ReminderPublisher
 	taskRepo         repository.TaskRepository
 	notificationRepo repository.NotificationRepository
 	wsHub            *websocket.Hub
 	checkInterval    time.Duration
 }
 
-// NewDeadlineChecker - создает воркер проверки дедлайнов
+// NewDeadlineChecker — создает воркер проверки дедлайнов
 func NewDeadlineChecker(
-	rabbitConn *rabbitmq.Connection,
+	publisher repository.ReminderPublisher,
 	taskRepo repository.TaskRepository,
 	notificationRepo repository.NotificationRepository,
 	wsHub *websocket.Hub,
 	checkInterval time.Duration,
 ) *DeadlineChecker {
 	return &DeadlineChecker{
-		rabbitConn:       rabbitConn,
+		publisher:        publisher,
 		taskRepo:         taskRepo,
 		notificationRepo: notificationRepo,
 		wsHub:            wsHub,
@@ -116,8 +115,9 @@ func (dc *DeadlineChecker) check(ctx context.Context) {
 			Type:   string(models.NotificationTypeReminder),
 		}
 
-		if err := dc.rabbitConn.PublishReminder(ctx, msg, 0); err != nil {
+		if err := dc.publisher.PublishReminder(ctx, msg, 0); err != nil {
 			logger.Logger.Errorf("Ошибка отправки напоминания в очередь: %v", err)
+			continue
 		}
 	}
 

@@ -9,9 +9,19 @@ import (
 
 	"github.com/alligatorO15/taskMind/backend/internal/config"
 	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
+	"github.com/alligatorO15/taskMind/backend/internal/domain/repository"
 	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
+
+// NewPublisher — безопасно создаёт ReminderPublisher из Connection.
+// Возвращает nil-интерфейс, если conn == nil, избегая ловушки non-nil interface с nil-значением.
+func NewPublisher(conn *Connection) repository.ReminderPublisher {
+	if conn == nil {
+		return nil
+	}
+	return conn
+}
 
 // Connection — обёртка над подключением к RabbitMQ с поддержкой переподключения.
 // Предоставляет методы для публикации отложенных сообщений и потребления из очереди.

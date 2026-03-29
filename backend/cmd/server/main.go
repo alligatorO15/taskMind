@@ -73,7 +73,8 @@ func main() {
 
 	// инициализация юзкейсов
 	authUC := usecase.NewAuthUseCase(userRepo, cfg.JWT)
-	taskUC := usecase.NewTaskUseCase(taskRepo, projectRepo, rabbitConn, cfg.Reminder) // немного нарушил dependency inversion (можно было сделать интерфейс и конструктор)
+	publisher := rabbitmq.NewPublisher(rabbitConn)
+	taskUC := usecase.NewTaskUseCase(taskRepo, projectRepo, publisher, cfg.Reminder)
 	projectUC := usecase.NewProjectUseCase(projectRepo)
 	notificationUC := usecase.NewNotificationUseCase(notificationRepo)
 
