@@ -15,12 +15,14 @@ import (
 
 // Connection — обёртка над подключением к RabbitMQ с поддержкой переподключения.
 // Предоставляет методы для публикации отложенных сообщений и потребления из очереди.
+// Использует раздельные каналы для publish и consume, т.к. amqp.Channel не потокобезопасен.
 type Connection struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
-	cfg     config.RabbitMQConfig
-	mu      sync.Mutex
-	closed  bool
+	conn      *amqp.Connection
+	publishCh *amqp.Channel
+	consumeCh *amqp.Channel // не нужен мьютекс,так как однократно при инициализации
+	cfg       config.RabbitMQConfig
+	publishMu sync.Mutex
+	closed    bool
 }
 
 // NewConnection — устанавливает подключение к RabbitMQ,
@@ -31,15 +33,22 @@ func NewConnection(cfg config.RabbitMQConfig) (*Connection, error) {
 		return nil, fmt.Errorf("не удалось подключиться к RabbitMQ: %w", err)
 	}
 
-	ch, err := conn.Channel()
+	publishCh, err := conn.Channel()
 	if err != nil {
 		conn.Close()
-		return nil, fmt.Errorf("не удалось открыть канал RabbitMQ: %w", err)
+		return nil, fmt.Errorf("не удалось открыть publish-канал RabbitMQ: %w", err)
+	}
+
+	consumeCh, err := conn.Channel()
+	if err != nil {
+		publishCh.Close()
+		conn.Close()
+		return nil, fmt.Errorf("не удалось открыть consume-канал RabbitMQ: %w", err)
 	}
 
 	// Объявляем exchange с типом x-delayed-message для отложенной доставки.
 	// Требуется плагин rabbitmq_delayed_message_exchange.
-	err = ch.ExchangeDeclare(
+	err = publishCh.ExchangeDeclare(
 		cfg.Exchange,
 		"x-delayed-message",
 		true,  // durable
@@ -53,7 +62,7 @@ func NewConnection(cfg config.RabbitMQConfig) (*Connection, error) {
 	if err != nil {
 		// Если плагин не установлен, используем стандартный direct exchange
 		logger.Logger.Warnf("Плагин delayed_message_exchange не найден, используем direct exchange: %v", err)
-		err = ch.ExchangeDeclare(
+		err = publishCh.ExchangeDeclare(
 			cfg.Exchange,
 			"direct",
 			true,
@@ -63,14 +72,15 @@ func NewConnection(cfg config.RabbitMQConfig) (*Connection, error) {
 			nil,
 		)
 		if err != nil {
-			ch.Close()
+			publishCh.Close()
+			consumeCh.Close()
 			conn.Close()
 			return nil, fmt.Errorf("не удалось объявить exchange: %w", err)
 		}
 	}
 
 	// Объявляем очередь для напоминаний
-	_, err = ch.QueueDeclare(
+	_, err = publishCh.QueueDeclare(
 		cfg.Queue,
 		true,  // durable
 		false, // auto-delete
@@ -79,13 +89,14 @@ func NewConnection(cfg config.RabbitMQConfig) (*Connection, error) {
 		nil,
 	)
 	if err != nil {
-		ch.Close()
+		publishCh.Close()
+		consumeCh.Close()
 		conn.Close()
 		return nil, fmt.Errorf("не удалось объявить очередь: %w", err)
 	}
 
 	// Привязываем очередь к exchange
-	err = ch.QueueBind(
+	err = publishCh.QueueBind(
 		cfg.Queue,
 		cfg.Queue, // routing key = имя очереди
 		cfg.Exchange,
@@ -93,7 +104,8 @@ func NewConnection(cfg config.RabbitMQConfig) (*Connection, error) {
 		nil,
 	)
 	if err != nil {
-		ch.Close()
+		publishCh.Close()
+		consumeCh.Close()
 		conn.Close()
 		return nil, fmt.Errorf("не удалось привязать очередь к exchange: %w", err)
 	}
@@ -101,17 +113,18 @@ func NewConnection(cfg config.RabbitMQConfig) (*Connection, error) {
 	logger.Logger.Info("Подключение к RabbitMQ установлено")
 
 	return &Connection{
-		conn:    conn,
-		channel: ch,
-		cfg:     cfg,
+		conn:      conn,
+		publishCh: publishCh,
+		consumeCh: consumeCh,
+		cfg:       cfg,
 	}, nil
 }
 
 // PublishReminder — отправляет отложенное сообщение-напоминание в очередь.
 // Параметр delay определяет задержку перед доставкой сообщения получателю.
 func (c *Connection) PublishReminder(ctx context.Context, msg models.ReminderMessage, delay time.Duration) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.publishMu.Lock()
+	defer c.publishMu.Unlock()
 
 	body, err := json.Marshal(msg)
 	if err != nil {
@@ -124,7 +137,7 @@ func (c *Connection) PublishReminder(ctx context.Context, msg models.ReminderMes
 		headers["x-delay"] = int64(delay / time.Millisecond)
 	}
 
-	err = c.channel.PublishWithContext(
+	err = c.publishCh.PublishWithContext(
 		ctx,
 		c.cfg.Exchange,
 		c.cfg.Queue,
@@ -148,10 +161,7 @@ func (c *Connection) PublishReminder(ctx context.Context, msg models.ReminderMes
 // Consume — запускает потребление сообщений из очереди напоминаний.
 // Возвращает канал для чтения входящих сообщений.
 func (c *Connection) Consume() (<-chan amqp.Delivery, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	msgs, err := c.channel.Consume(
+	msgs, err := c.consumeCh.Consume(
 		c.cfg.Queue,
 		"",    // consumer tag
 		false, // auto-ack (подтверждаем вручную после обработки)
@@ -167,18 +177,21 @@ func (c *Connection) Consume() (<-chan amqp.Delivery, error) {
 	return msgs, nil
 }
 
-// Close — закрывает канал и подключение к RabbitMQ
+// Close — закрывает каналы и подключение к RabbitMQ
 func (c *Connection) Close() error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.publishMu.Lock()
+	defer c.publishMu.Unlock()
 
 	if c.closed {
 		return nil
 	}
 	c.closed = true
 
-	if c.channel != nil {
-		c.channel.Close()
+	if c.publishCh != nil {
+		c.publishCh.Close()
+	}
+	if c.consumeCh != nil {
+		c.consumeCh.Close()
 	}
 	if c.conn != nil {
 		return c.conn.Close()
