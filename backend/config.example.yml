@@ -1,6 +1,9 @@
 server:
   port: 8080
   mode: debug
+  read_timeout: 15s
+  write_timeout: 15s
+  idle_timeout: 60s
 
 mongodb:
   uri: mongodb://localhost:27017

@@ -18,8 +18,11 @@ type Config struct {
 
 // настройки http-сервера
 type ServerConfig struct {
-	Port string `mapstructure:"port"`
-	Mode string `mapstructure:"mode"`
+	Port         string        `mapstructure:"port"`
+	Mode         string        `mapstructure:"mode"`
+	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
+	WriteTimeout time.Duration `mapstructure:"write_timeout"`
+	IdleTimeout  time.Duration `mapstructure:"idle_timeout"`
 }
 
 // настройки подключений к mongodb
