@@ -7,7 +7,7 @@ server:
 
 mongodb:
   uri: mongodb://localhost:27017
-  databse: taskmind
+  database: taskmind
   timeout: 10s # макс время ожидания ответ от mongodb на любую операцию
 
 rabbitmq:
