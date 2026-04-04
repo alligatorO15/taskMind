@@ -26,12 +26,17 @@ backend/
     └── apperror/        # Общие типы ошибок
 
 frontend/
-├── src/
-│   ├── components/      # React-компоненты (Layout, TaskCard, TaskDialog, NotificationPanel)
-│   ├── pages/           # Страницы (Login, Register, Dashboard, Tasks, Projects)
-│   ├── store/           # Redux Toolkit (slices: auth, task, project, notification)
-│   └── services/        # API-клиент (Axios), WebSocket-сервис
-└── public/
+├── index.html           # Точка входа Vite
+├── vite.config.js       # Конфигурация Vite (proxy, алиасы)
+├── eslint.config.js     # Линтинг (ESLint flat config)
+└── src/
+    ├── App.js           # Корневой компонент: тема, роутинг, lazy loading
+    ├── theme/           # MUI-тема (светлая / тёмная)
+    ├── constants/       # Общие константы (статусы, приоритеты, цвета)
+    ├── components/      # React-компоненты (Layout, TaskCard, TaskDialog, ErrorBoundary)
+    ├── pages/           # Страницы (Login, Register, Dashboard, Tasks, Projects, 404)
+    ├── store/           # Redux Toolkit (slices: auth, task, project, notification)
+    └── services/        # API-клиент (Axios + JWT refresh), WebSocket-сервис
 ```
 
 ## Технологический стек
@@ -39,7 +44,7 @@ frontend/
 ### Бэкенд
 | Компонент | Технология |
 |-----------|-----------|
-| Язык | Go 1.26 |
+| Язык | Go 1.22 |
 | Веб-фреймворк | Gin |
 | База данных | MongoDB |
 | Брокер сообщений | RabbitMQ (delayed message exchange) |
@@ -51,11 +56,14 @@ frontend/
 ### Фронтенд
 | Компонент | Технология |
 |-----------|-----------|
-| Фреймворк | React 18 |
+| Фреймворк | React 19 |
+| Сборщик | Vite 6 |
+| Роутинг | React Router 7 |
 | Состояние | Redux Toolkit |
-| UI | Material-UI (MUI) 5 |
+| UI-библиотека | Material UI (MUI) 7 |
 | HTTP-клиент | Axios |
 | WebSocket | Native WebSocket API |
+| Линтинг | ESLint 9 (flat config) |
 
 ### Инфраструктура
 | Компонент | Технология |
@@ -69,14 +77,14 @@ frontend/
 ### Предварительные требования
 
 - Docker и Docker Compose
-- Go 1.22+ (для локальной разработки)
-- Node.js 20+ (для локальной разработки фронтенда)
+- Go 1.22+ (для локальной разработки бэкенда)
+- Node.js 22+ (для локальной разработки фронтенда)
 
 ### Запуск через Docker Compose
 
 ```bash
 # Клонируем репозиторий
-git clone https://github.com/username/taskmind.git
+git clone https://github.com/alligatorO15/taskmind.git
 cd taskmind
 
 # Запускаем все сервисы
@@ -114,8 +122,11 @@ cd frontend
 # Устанавливаем зависимости
 npm install
 
-# Запускаем dev-сервер
-npm start
+# Копируем переменные окружения
+cp .env.example .env
+
+# Запускаем dev-сервер (порт 3000, proxy на бэкенд)
+npm run dev
 ```
 
 ### Запуск тестов
@@ -123,6 +134,13 @@ npm start
 ```bash
 cd backend
 go test -v ./...
+```
+
+### Линтинг фронтенда
+
+```bash
+cd frontend
+npm run lint
 ```
 
 ## API Endpoints
@@ -185,7 +203,7 @@ curl -X POST http://localhost:8080/api/v1/tasks \
     "description": "Квартальный отчёт по продажам",
     "priority": "high",
     "tags": ["работа", "отчёт"],
-    "deadline": "2026-03-01T18:00:00Z",
+    "deadline": "2026-04-15T18:00:00Z",
     "reminder_before": "1h"
   }'
 ```
@@ -212,6 +230,8 @@ TaskMind использует двухуровневую систему напо
 
 ## Конфигурация
 
+### Бэкенд
+
 Настройки задаются в `backend/config.yaml`:
 
 ```yaml
@@ -233,6 +253,14 @@ jwt:
 reminder:
   default_before: 30m  # За сколько до дедлайна напоминать
   check_interval: 1m   # Интервал проверки просроченных задач
+```
+
+### Фронтенд
+
+Переменные окружения (файл `.env`):
+
+```env
+VITE_API_BASE_URL=/api/v1
 ```
 
 ## Лицензия
