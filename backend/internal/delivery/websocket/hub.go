@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/config"
-	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
+	"github.com/alligatorO15/taskmind-backend/internal/config"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/models"
+	"github.com/alligatorO15/taskmind-backend/internal/infrastructure/logger"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

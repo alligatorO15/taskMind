@@ -1,10 +1,10 @@
 package http
 
 import (
-	"github.com/alligatorO15/taskMind/backend/internal/delivery/http/handler"
-	"github.com/alligatorO15/taskMind/backend/internal/delivery/http/middleware"
-	"github.com/alligatorO15/taskMind/backend/internal/delivery/websocket"
-	"github.com/alligatorO15/taskMind/backend/internal/usecase"
+	"github.com/alligatorO15/taskmind-backend/internal/delivery/http/handler"
+	"github.com/alligatorO15/taskmind-backend/internal/delivery/http/middleware"
+	"github.com/alligatorO15/taskmind-backend/internal/delivery/websocket"
+	"github.com/alligatorO15/taskmind-backend/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

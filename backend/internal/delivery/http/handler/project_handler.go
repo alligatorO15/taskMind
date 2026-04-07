@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
-	"github.com/alligatorO15/taskMind/backend/internal/usecase"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/models"
+	"github.com/alligatorO15/taskmind-backend/internal/usecase"
 	"github.com/gin-gonic/gin"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"

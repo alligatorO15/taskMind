@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/config"
-	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
-	"github.com/alligatorO15/taskMind/backend/internal/domain/repository"
 	"github.com/alligatorO15/taskMind/backend/pkg/apperror"
+	"github.com/alligatorO15/taskmind-backend/internal/config"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/models"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/repository"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"

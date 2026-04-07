@@ -9,15 +9,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/config"
-	httpDelivery "github.com/alligatorO15/taskMind/backend/internal/delivery/http"
-	"github.com/alligatorO15/taskMind/backend/internal/delivery/websocket"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/mongodb"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/rabbitmq"
-	mongoRepo "github.com/alligatorO15/taskMind/backend/internal/repository/mongo"
-	"github.com/alligatorO15/taskMind/backend/internal/usecase"
-	"github.com/alligatorO15/taskMind/backend/internal/worker"
+	httpDelivery "github.com/alligatorO15/taskmind-backend/internal/delivery/http"
+
+	"github.com/alligatorO15/taskmind-backend/internal/config"
+	"github.com/alligatorO15/taskmind-backend/internal/delivery/websocket"
+	"github.com/alligatorO15/taskmind-backend/internal/infrastructure/logger"
+	"github.com/alligatorO15/taskmind-backend/internal/infrastructure/mongodb"
+	"github.com/alligatorO15/taskmind-backend/internal/infrastructure/rabbitmq"
+	mongoRepo "github.com/alligatorO15/taskmind-backend/internal/repository/mongo"
+	"github.com/alligatorO15/taskmind-backend/internal/usecase"
+	"github.com/alligatorO15/taskmind-backend/internal/worker"
+
 	"github.com/gin-gonic/gin"
 )
 

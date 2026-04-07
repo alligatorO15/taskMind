@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/delivery/websocket"
-	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
-	"github.com/alligatorO15/taskMind/backend/internal/domain/repository"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
+	"github.com/alligatorO15/taskmind-backend/internal/delivery/websocket"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/models"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/repository"
+	"github.com/alligatorO15/taskmind-backend/internal/infrastructure/logger"
 )
 
 // DeadlineChecker - фоновый воркер для периодической проверки просроченных задач

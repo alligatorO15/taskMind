@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/alligatorO15/taskMind/backend/internal/usecase"
+	"github.com/alligatorO15/taskmind-backend/internal/usecase"
 	"github.com/gin-gonic/gin"
 )
 

@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/config"
-	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
 	"github.com/alligatorO15/taskMind/backend/pkg/apperror"
+	"github.com/alligatorO15/taskmind-backend/internal/config"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )

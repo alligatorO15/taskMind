@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
-	"github.com/alligatorO15/taskMind/backend/internal/domain/repository"
 	"github.com/alligatorO15/taskMind/backend/pkg/apperror"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/models"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"

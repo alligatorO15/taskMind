@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/domain/models"
+	"github.com/alligatorO15/taskmind-backend/internal/domain/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

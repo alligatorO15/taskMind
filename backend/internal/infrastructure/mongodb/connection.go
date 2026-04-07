@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/alligatorO15/taskMind/backend/internal/config"
-	"github.com/alligatorO15/taskMind/backend/internal/infrastructure/logger"
+	"github.com/alligatorO15/taskmind-backend/internal/config"
+	"github.com/alligatorO15/taskmind-backend/internal/infrastructure/logger"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
