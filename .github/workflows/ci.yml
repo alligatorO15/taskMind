@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (Go)
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Клонирование репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Загрузка зависимостей
+        working-directory: ./backend
+        run: go mod download
+
+      - name: Проверка форматирования
+        working-directory: ./backend
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Следующие файлы не отформатированы:"
+            gofmt -l .
+            exit 1
+          fi
+
+      - name: Статический анализ (vet)
+        working-directory: ./backend
+        run: go vet ./...
+
+      - name: Сборка
+        working-directory: ./backend
+        run: go build -v ./...
+
+      - name: Запуск тестов
+        working-directory: ./backend
+        run: go test -v -race -coverprofile=coverage.out ./...
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+          MONGODB_DATABASE: taskmind_test
+
+      - name: Отчет о покрытии
+        working-directory: ./backend
+        run: go tool cover -func=coverage.out
+
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Клонирование репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Установка зависимостей
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Линтинг
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Сборка
+        working-directory: ./frontend
+        run: npm run build
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+
+    steps:
+      - name: Клонирование репозитория
+        uses: actions/checkout@v4
+
+      - name: Сборка образа бэкенда
+        run: docker build -t taskmind-backend ./backend
+
+      - name: Сборка образа фронтенда
+        run: docker build -t taskmind-frontend ./frontend
