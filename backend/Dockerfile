@@ -22,7 +22,7 @@ WORKDIR /app
 
 # Копируем собранный бинарник и конфигурацию
 COPY --from=builder /taskmind .
-COPY config.yaml .
+COPY config.yml .
 
 EXPOSE 8080
 
