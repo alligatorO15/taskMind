@@ -8,7 +8,7 @@ import {
   Select,
   MenuItem,
   Fab,
-  Grid2 as Grid,
+  Grid,
   CircularProgress,
   InputAdornment,
 } from '@mui/material';
