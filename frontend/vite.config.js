@@ -18,19 +18,17 @@ export default defineConfig({
       loader: { '.js': 'jsx' },
     },
   },
-  publicDir: 'public',
+  publicDir: false,
   server: {
     port: 3000,
     proxy: {
       '/api': {
-      target: 'http://localhost:8080',
-      changeOrigin: true,  
+        target: 'http://localhost:8080',
+        changeOrigin: true,
       },
     },
   },
   build: {
     outDir: 'dist',
-  }
+  },
 });
-  
-
