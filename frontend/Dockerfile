@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Копируем файлы зависимостей для кеширования
 COPY package.json package-lock.json* ./
-RUN npm install --silent
+RUN npm install 
 
 # Копируем исходный код и собираем production-сборку
 COPY . .
