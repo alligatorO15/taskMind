@@ -10,6 +10,7 @@ export default defineConfig({
     },
   },
   esbuild: {
+    include: /\.js$/,
     loader: 'jsx',
   },
   optimizeDeps: {
