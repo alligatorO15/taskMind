@@ -10,7 +10,7 @@ export const fetchTasks = createAsyncThunk(
       const { data } = await api.get('/tasks', { params });
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка загрузки задач');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка загрузки задач');
     }
   }
 );
@@ -23,7 +23,7 @@ export const fetchTask = createAsyncThunk(
       const { data } = await api.get(`/tasks/${id}`);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка загрузки задачи');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка загрузки задачи');
     }
   }
 );
@@ -36,7 +36,7 @@ export const createTask = createAsyncThunk(
       const { data } = await api.post('/tasks', taskData);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка создания задачи');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка создания задачи');
     }
   }
 );
@@ -46,10 +46,10 @@ export const updateTask = createAsyncThunk(
   'task/updateTask',
   async ({ id, ...taskData }, { rejectWithValue }) => {
     try {
-      const { data } = await api.patch(`/tasks/${id}`, taskData);
+      const { data } = await api.put(`/tasks/${id}`, taskData);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка обновления задачи');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка обновления задачи');
     }
   }
 );
@@ -62,7 +62,7 @@ export const deleteTask = createAsyncThunk(
       await api.delete(`/tasks/${id}`);
       return id;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка удаления задачи');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка удаления задачи');
     }
   }
 );

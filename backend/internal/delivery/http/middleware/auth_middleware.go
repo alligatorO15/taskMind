@@ -8,26 +8,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AuthMiddleware - middleware для проверки JWT access-токена
-// Извлекает токен из заголвока Authorzation (формат: "Bearer <token>")
-// валилирует и помкщает userID в контекст запроса
+// AuthMiddleware — middleware для проверки JWT access-токена.
+// Извлекает токен из заголовка Authorization (формат: "Bearer <token>"),
+// валидирует его и помещает userID в контекст запроса.
 func AuthMiddleware(authUC *usecase.AuthUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "отсутствует заголовок авторизации"})
+		var token string
+
+		// Извлекаем токен из заголовка Authorization
+		if authHeader := c.GetHeader("Authorization"); authHeader != "" {
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) == 2 && parts[0] == "Bearer" {
+				token = parts[1]
+			}
+		}
+
+		// Fallback: query-параметр ?token= (для WebSocket, где нельзя задать заголовки)
+		if token == "" {
+			token = c.Query("token")
+		}
+
+		if token == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "отсутствует токен авторизации"})
 			c.Abort()
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "неверный формат токена"})
-			c.Abort()
-			return
-		}
-
-		userID, err := authUC.ParseAccessToken(parts[1])
+		userID, err := authUC.ParseAccessToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "невалидный или просроченный токен"})
 			c.Abort()
@@ -36,6 +43,5 @@ func AuthMiddleware(authUC *usecase.AuthUseCase) gin.HandlerFunc {
 
 		c.Set("userID", userID)
 		c.Next()
-
 	}
 }

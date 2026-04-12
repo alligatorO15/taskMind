@@ -15,6 +15,8 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Snackbar,
+  Alert,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -27,7 +29,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
-import { addNotification } from '../store/notificationSlice';
+import { addNotification, fetchUnreadCount } from '../store/notificationSlice';
 import wsService from '../services/websocket';
 import NotificationPanel from './NotificationPanel';
 
@@ -41,6 +43,7 @@ export default function Layout({ darkMode, onToggleDarkMode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorUser, setAnchorUser] = useState(null);
   const [anchorNotif, setAnchorNotif] = useState(null);
+  const [toast, setToast] = useState({ open: false, title: '', message: '', severity: 'info' });
 
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -63,6 +66,11 @@ export default function Layout({ darkMode, onToggleDarkMode }) {
     navigate('/login');
   };
 
+  // Загрузка счётчика непрочитанных при старте
+  useEffect(() => {
+    dispatch(fetchUnreadCount());
+  }, [dispatch]);
+
   // Подключение WebSocket при наличии токена
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -70,6 +78,12 @@ export default function Layout({ darkMode, onToggleDarkMode }) {
       wsService.connect(token);
       const unsub = wsService.onNotification((notification) => {
         dispatch(addNotification(notification));
+        setToast({
+          open: true,
+          title: notification.title || 'Уведомление',
+          message: notification.message || '',
+          severity: notification.type === 'overdue' ? 'warning' : 'info',
+        });
       });
       return () => {
         unsub();
@@ -211,6 +225,25 @@ export default function Layout({ darkMode, onToggleDarkMode }) {
       >
         <Outlet />
       </Box>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={5000}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setToast((t) => ({ ...t, open: false }))}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          <Typography variant="subtitle2" fontWeight={600}>{toast.title}</Typography>
+          {toast.message && (
+            <Typography variant="body2">{toast.message}</Typography>
+          )}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

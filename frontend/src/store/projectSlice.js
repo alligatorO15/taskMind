@@ -10,7 +10,7 @@ export const fetchProjects = createAsyncThunk(
       const { data } = await api.get('/projects');
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка загрузки проектов');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка загрузки проектов');
     }
   }
 );
@@ -23,7 +23,7 @@ export const createProject = createAsyncThunk(
       const { data } = await api.post('/projects', projectData);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка создания проекта');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка создания проекта');
     }
   }
 );
@@ -36,7 +36,7 @@ export const updateProject = createAsyncThunk(
       const { data } = await api.put(`/projects/${id}`, projectData);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка обновления проекта');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка обновления проекта');
     }
   }
 );
@@ -49,7 +49,7 @@ export const deleteProject = createAsyncThunk(
       await api.delete(`/projects/${id}`);
       return id;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка удаления проекта');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка удаления проекта');
     }
   }
 );

@@ -10,7 +10,7 @@ export const fetchNotifications = createAsyncThunk(
       const { data } = await api.get('/notifications', { params });
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка загрузки уведомлений');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка загрузки уведомлений');
     }
   }
 );
@@ -23,7 +23,7 @@ export const markAsRead = createAsyncThunk(
       await api.put(`/notifications/${id}/read`);
       return id;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка отметки');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка отметки');
     }
   }
 );
@@ -35,7 +35,7 @@ export const markAllAsRead = createAsyncThunk(
     try {
       await api.put('/notifications/read-all');
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка отметки');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка отметки');
     }
   }
 );
@@ -48,7 +48,7 @@ export const fetchUnreadCount = createAsyncThunk(
       const { data } = await api.get('/notifications/unread-count');
       return data.count ?? data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка загрузки');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка загрузки');
     }
   }
 );

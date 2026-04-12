@@ -1,4 +1,3 @@
-// Панель уведомлений: выпадающий список, кнопка «отметить все прочитанными»
 import React, { useEffect } from 'react';
 import {
   IconButton,
@@ -14,7 +13,11 @@ import {
 } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import AlarmIcon from '@mui/icons-material/Alarm';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import InfoIcon from '@mui/icons-material/Info';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
 import {
   fetchNotifications,
   fetchUnreadCount,
@@ -22,8 +25,15 @@ import {
   markAsRead,
 } from '../store/notificationSlice';
 
+const NOTIF_ICONS = {
+  reminder: <AlarmIcon fontSize="small" color="info" />,
+  overdue: <WarningAmberIcon fontSize="small" color="warning" />,
+  system: <InfoIcon fontSize="small" color="action" />,
+};
+
 export default function NotificationPanel({ anchorEl, onOpen, onClose }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { notifications, unreadCount, loading } = useSelector((state) => state.notification);
   const open = Boolean(anchorEl);
 
@@ -39,8 +49,19 @@ export default function NotificationPanel({ anchorEl, onOpen, onClose }) {
     onClose();
   };
 
-  const handleMarkRead = (id) => {
-    dispatch(markAsRead(id));
+  const handleClick = (n) => {
+    if (!n.read) {
+      dispatch(markAsRead(n.id));
+    }
+    onClose();
+    if (n.task_id) {
+      navigate('/tasks');
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleString('ru');
   };
 
   return (
@@ -92,20 +113,37 @@ export default function NotificationPanel({ anchorEl, onOpen, onClose }) {
             notifications.map((n) => (
               <MenuItem
                 key={n.id}
-                onClick={() => handleMarkRead(n.id)}
+                onClick={() => handleClick(n)}
                 sx={{
                   bgcolor: n.read ? 'transparent' : 'action.hover',
                   py: 1.5,
+                  alignItems: 'flex-start',
                 }}
               >
-                <ListItemIcon>
-                  {!n.read && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />}
+                <ListItemIcon sx={{ mt: 0.5 }}>
+                  {NOTIF_ICONS[n.type] || NOTIF_ICONS.system}
                 </ListItemIcon>
                 <ListItemText
-                  primary={n.title || n.message || 'Уведомление'}
-                  secondary={n.createdAt ? new Date(n.createdAt).toLocaleString('ru') : null}
+                  primary={n.title || 'Уведомление'}
+                  secondary={
+                    <>
+                      {n.message && (
+                        <Typography variant="body2" component="span" display="block" color="text.secondary">
+                          {n.message}
+                        </Typography>
+                      )}
+                      <Typography variant="caption" component="span" color="text.disabled">
+                        {formatDate(n.created_at)}
+                      </Typography>
+                    </>
+                  }
                   primaryTypographyProps={{ fontWeight: n.read ? 400 : 600 }}
                 />
+                {n.task_id && (
+                  <Typography variant="caption" color="primary" sx={{ ml: 1, mt: 0.5, whiteSpace: 'nowrap' }}>
+                    Открыть задачу
+                  </Typography>
+                )}
               </MenuItem>
             ))
           )}
