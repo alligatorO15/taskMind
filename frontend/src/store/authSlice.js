@@ -5,13 +5,14 @@ import api, { setRefreshTokenFn } from '../services/api';
 // Регистрация пользователя
 export const register = createAsyncThunk(
   'auth/register',
-  async ({ username, email, password }, { rejectWithValue }) => {
+  async ({ username, email, password }, { rejectWithValue, dispatch }) => {
     try {
       const { data } = await api.post('/auth/register', { username, email, password });
-      if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken || '');
+      if (data.access_token) {
+        localStorage.setItem('accessToken', data.access_token);
+        localStorage.setItem('refreshToken', data.refresh_token || '');
       }
+      await dispatch(getProfile()).unwrap();
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || 'Ошибка регистрации');
@@ -22,13 +23,14 @@ export const register = createAsyncThunk(
 // Вход в систему
 export const login = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password }, { rejectWithValue, dispatch }) => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken || '');
+      if (data.access_token) {
+        localStorage.setItem('accessToken', data.access_token);
+        localStorage.setItem('refreshToken', data.refresh_token || '');
       }
+      await dispatch(getProfile()).unwrap();
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || 'Ошибка входа');
@@ -43,10 +45,10 @@ export const refreshToken = createAsyncThunk(
     try {
       const refresh = localStorage.getItem('refreshToken');
       if (!refresh) throw new Error('Нет refresh токена');
-      const { data } = await api.post('/auth/refresh', { refreshToken: refresh });
-      localStorage.setItem('accessToken', data.accessToken);
-      if (data.refreshToken) {
-        localStorage.setItem('refreshToken', data.refreshToken);
+      const { data } = await api.post('/auth/refresh', { refresh_token: refresh });
+      localStorage.setItem('accessToken', data.access_token);
+      if (data.refresh_token) {
+        localStorage.setItem('refreshToken', data.refresh_token);
       }
       return data;
     } catch (err) {
@@ -60,7 +62,7 @@ export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await api.get('/auth/profile');
+      const { data } = await api.get('/profile');
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || 'Ошибка загрузки профиля');
@@ -99,10 +101,9 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
         state.tokens = {
-          accessToken: action.payload.accessToken,
-          refreshToken: action.payload.refreshToken,
+          accessToken: action.payload.access_token,
+          refreshToken: action.payload.refresh_token,
         };
         state.error = null;
       })
@@ -117,10 +118,9 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
         state.tokens = {
-          accessToken: action.payload.accessToken,
-          refreshToken: action.payload.refreshToken,
+          accessToken: action.payload.access_token,
+          refreshToken: action.payload.refresh_token,
         };
         state.error = null;
       })
@@ -130,9 +130,9 @@ const authSlice = createSlice({
       })
       // refreshToken
       .addCase(refreshToken.fulfilled, (state, action) => {
-        state.tokens.accessToken = action.payload.accessToken;
-        if (action.payload.refreshToken) {
-          state.tokens.refreshToken = action.payload.refreshToken;
+        state.tokens.accessToken = action.payload.access_token;
+        if (action.payload.refresh_token) {
+          state.tokens.refreshToken = action.payload.refresh_token;
         }
       })
       .addCase(refreshToken.rejected, (state) => {
