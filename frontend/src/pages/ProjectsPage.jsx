@@ -169,7 +169,7 @@ export default function ProjectsPage() {
                     </Typography>
                   )}
                   <Chip
-                    label={`${project.taskCount ?? 0} задач`}
+                    label={`${project.task_count ?? 0} задач`}
                     size="small"
                     sx={{ mt: 1 }}
                   />
