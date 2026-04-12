@@ -37,6 +37,13 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
     { value: 'h', label: 'часов' },
   ];
 
+  const toLocalDatetime = (isoStr) => {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   const nsToReminder = (ns) => {
     if (!ns) return { value: '', unit: 'h' };
     const totalMinutes = Math.round(ns / 6e10);
@@ -56,7 +63,7 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
         priority: task.priority || 'medium',
         projectId: task.project_id || task.projectId || task.project?.id || '',
         tags: Array.isArray(task.tags) ? task.tags.map((t) => (typeof t === 'string' ? t : t.name)) : [],
-        deadline: task.deadline ? task.deadline.slice(0, 16) : '',
+        deadline: toLocalDatetime(task.deadline),
         reminderValue: rem.value,
         reminderUnit: rem.unit,
         tagInput: '',
