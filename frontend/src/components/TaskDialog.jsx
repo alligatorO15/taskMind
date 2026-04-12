@@ -27,12 +27,28 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
     projectId: '',
     tags: [],
     deadline: '',
-    reminder: '',
+    reminderValue: '',
+    reminderUnit: 'h',
     tagInput: '',
   });
 
+  const REMINDER_UNITS = [
+    { value: 'm', label: 'минут' },
+    { value: 'h', label: 'часов' },
+  ];
+
+  const nsToReminder = (ns) => {
+    if (!ns) return { value: '', unit: 'h' };
+    const totalMinutes = Math.round(ns / 6e10);
+    if (totalMinutes >= 60 && totalMinutes % 60 === 0) {
+      return { value: String(totalMinutes / 60), unit: 'h' };
+    }
+    return { value: String(totalMinutes), unit: 'm' };
+  };
+
   useEffect(() => {
     if (task) {
+      const rem = nsToReminder(task.reminder_before);
       setForm({
         title: task.title || '',
         description: task.description || '',
@@ -41,7 +57,8 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
         projectId: task.project_id || task.projectId || task.project?.id || '',
         tags: Array.isArray(task.tags) ? task.tags.map((t) => (typeof t === 'string' ? t : t.name)) : [],
         deadline: task.deadline ? task.deadline.slice(0, 16) : '',
-        reminder: task.reminder ? task.reminder.slice(0, 16) : '',
+        reminderValue: rem.value,
+        reminderUnit: rem.unit,
         tagInput: '',
       });
     } else {
@@ -53,7 +70,8 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
         projectId: '',
         tags: [],
         deadline: '',
-        reminder: '',
+        reminderValue: '',
+        reminderUnit: 'h',
         tagInput: '',
       });
     }
@@ -85,7 +103,7 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
       project_id: form.projectId || undefined,
       tags: form.tags,
       deadline: toRFC3339(form.deadline),
-      reminder_before: form.reminder || undefined,
+      reminder_before: form.reminderValue ? `${form.reminderValue}${form.reminderUnit}` : undefined,
     };
     if (task) payload.id = task.id;
     onSubmit(payload);
@@ -177,14 +195,32 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
             slotProps={{ inputLabel: { shrink: true } }}
             fullWidth
           />
-          <TextField
-            label="Напоминание"
-            type="datetime-local"
-            value={form.reminder}
-            onChange={handleChange('reminder')}
-            slotProps={{ inputLabel: { shrink: true } }}
-            fullWidth
-          />
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <TextField
+              label="Напомнить за"
+              type="number"
+              value={form.reminderValue}
+              onChange={handleChange('reminderValue')}
+              disabled={!form.deadline}
+              fullWidth
+              slotProps={{ input: { inputProps: { min: 1 } } }}
+            />
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel>Единица</InputLabel>
+              <Select
+                value={form.reminderUnit}
+                onChange={handleChange('reminderUnit')}
+                label="Единица"
+                disabled={!form.deadline}
+              >
+                {REMINDER_UNITS.map((u) => (
+                  <MenuItem key={u.value} value={u.value}>
+                    {u.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
