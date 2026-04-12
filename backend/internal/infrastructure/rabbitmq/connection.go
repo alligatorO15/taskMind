@@ -70,8 +70,15 @@ func NewConnection(cfg config.RabbitMQConfig) (*Connection, error) {
 		},
 	)
 	if err != nil {
-		// Если плагин не установлен, используем стандартный direct exchange
+		// При ошибке AMQP-брокер закрывает канал — нужно открыть новый
 		logger.Logger.Warnf("Плагин delayed_message_exchange не найден, используем direct exchange: %v", err)
+		publishCh.Close()
+		publishCh, err = conn.Channel()
+		if err != nil {
+			consumeCh.Close()
+			conn.Close()
+			return nil, fmt.Errorf("не удалось переоткрыть publish-канал: %w", err)
+		}
 		err = publishCh.ExchangeDeclare(
 			cfg.Exchange,
 			"direct",

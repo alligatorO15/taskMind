@@ -16,7 +16,9 @@ services:
 
   # RabbitMQ — брокер сообщений с плагином отложенных сообщений
   rabbitmq:
-    image: rabbitmq:3-management
+    build:
+      context: ./rabbitmq
+      dockerfile: Dockerfile
     container_name: taskmind-rabbitmq
     ports:
       - "5672:5672"

@@ -26,7 +26,7 @@ import (
 // точка входа: инициализирует все компоненты, запускает HTTP-сервер, воркеры, graceful shutdown
 func main() {
 	// Загрузка конфига
-	cfg, err := config.Load("config.yaml")
+	cfg, err := config.Load("config.yml")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Ошибка загрузки конфигурации: %v\n", err)
 		os.Exit(1)
