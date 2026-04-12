@@ -14,7 +14,7 @@ export const register = createAsyncThunk(
       }
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка регистрации');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка регистрации');
     }
   }
 );
@@ -31,7 +31,7 @@ export const login = createAsyncThunk(
       }
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка входа');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка входа');
     }
   }
 );
@@ -50,7 +50,7 @@ export const refreshToken = createAsyncThunk(
       }
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка обновления токена');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка обновления токена');
     }
   }
 );
@@ -63,7 +63,7 @@ export const getProfile = createAsyncThunk(
       const { data } = await api.get('/auth/profile');
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Ошибка загрузки профиля');
+      return rejectWithValue(err.response?.data?.error || 'Ошибка загрузки профиля');
     }
   }
 );

@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/alligatorO15/taskMind/backend/pkg/apperror"
@@ -45,6 +47,9 @@ func (uc *AuthUseCase) Register(ctx context.Context, req models.UserRegisterRequ
 	}
 
 	if err := uc.userRepo.Create(ctx, user); err != nil {
+		if errors.Is(err, apperror.ErrAlreadyExists) {
+			return nil, fmt.Errorf("пользователь с таким email или именем уже существует: %w", err)
+		}
 		return nil, err
 	}
 
