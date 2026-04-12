@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import {
   Box,
   Typography,
@@ -26,6 +27,7 @@ const PRIORITY_FILTER_OPTIONS = ['', ...TASK_PRIORITIES];
 
 export default function TasksPage() {
   const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { tasks, loading } = useSelector((state) => state.task);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -39,6 +41,19 @@ export default function TasksPage() {
     dispatch(fetchTasks());
     dispatch(fetchProjects());
   }, [dispatch]);
+
+  // Открыть задачу из URL-параметра ?open=<taskId>
+  useEffect(() => {
+    const openId = searchParams.get('open');
+    if (openId && tasks.length > 0) {
+      const task = tasks.find((t) => t.id === openId);
+      if (task) {
+        setEditingTask(task);
+        setDialogOpen(true);
+      }
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, tasks, setSearchParams]);
 
   const filteredTasks = tasks.filter((task) => {
     if (filters.status && task.status !== filters.status) return false;
