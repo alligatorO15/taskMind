@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import FolderIcon from '@mui/icons-material/Folder';
-import { STATUS_COLORS, PRIORITY_COLORS } from '../constants';
+import { STATUS_COLORS, PRIORITY_COLORS, STATUS_LABELS, PRIORITY_LABELS } from '../constants';
 
 export default function TaskCard({ task, onClick }) {
   const status = task.status || 'new';
@@ -33,8 +33,8 @@ export default function TaskCard({ task, onClick }) {
           </Typography>
         )}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center', mt: 1 }}>
-          <Chip label={status} size="small" color={STATUS_COLORS[status] || 'default'} />
-          <Chip label={priority} size="small" color={PRIORITY_COLORS[priority] || 'default'} variant="outlined" />
+          <Chip label={STATUS_LABELS[status] || status} size="small" color={STATUS_COLORS[status] || 'default'} />
+          <Chip label={PRIORITY_LABELS[priority] || priority} size="small" color={PRIORITY_COLORS[priority] || 'default'} variant="outlined" />
           {deadline && (
             <Chip
               icon={<EventIcon sx={{ fontSize: 14 }} />}

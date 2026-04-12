@@ -1,13 +1,24 @@
-export const TASK_STATUSES = ['new', 'todo', 'in_progress', 'done', 'completed', 'cancelled'];
+export const TASK_STATUSES = ['new', 'in_progress', 'done'];
 export const TASK_PRIORITIES = ['low', 'medium', 'high'];
+
+export const STATUS_LABELS = {
+  new: 'Новая',
+  in_progress: 'В работе',
+  done: 'Завершена',
+  overdue: 'Просрочена',
+};
+
+export const PRIORITY_LABELS = {
+  low: 'Низкий',
+  medium: 'Средний',
+  high: 'Высокий',
+};
 
 export const STATUS_COLORS = {
   new: 'default',
-  todo: 'info',
   in_progress: 'primary',
   done: 'success',
-  completed: 'success',
-  cancelled: 'error',
+  overdue: 'error',
 };
 
 export const PRIORITY_COLORS = {

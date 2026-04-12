@@ -17,6 +17,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTasks } from '../store/taskSlice';
+import { STATUS_LABELS, PRIORITY_LABELS } from '../constants';
 
 const StatCard = ({ title, value, icon, color }) => (
   <Card sx={{ height: '100%', borderLeft: 4, borderColor: color }}>
@@ -130,12 +131,12 @@ export default function DashboardPage() {
                       <Typography fontWeight={500}>{task.title}</Typography>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <Chip
-                          label={task.status || 'new'}
+                          label={STATUS_LABELS[task.status] || task.status || 'Новая'}
                           size="small"
                           color={task.status === 'done' ? 'success' : 'default'}
                         />
                         {task.priority && (
-                          <Chip label={task.priority} size="small" variant="outlined" />
+                          <Chip label={PRIORITY_LABELS[task.priority] || task.priority} size="small" variant="outlined" />
                         )}
                       </Box>
                     </Box>

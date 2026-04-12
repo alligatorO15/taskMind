@@ -15,7 +15,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { TASK_STATUSES, TASK_PRIORITIES } from '../constants';
+import { TASK_STATUSES, TASK_PRIORITIES, STATUS_LABELS, PRIORITY_LABELS } from '../constants';
 
 export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
   const { projects } = useSelector((state) => state.project);
@@ -38,7 +38,7 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
         description: task.description || '',
         status: task.status || 'new',
         priority: task.priority || 'medium',
-        projectId: task.projectId || task.project?.id || '',
+        projectId: task.project_id || task.projectId || task.project?.id || '',
         tags: Array.isArray(task.tags) ? task.tags.map((t) => (typeof t === 'string' ? t : t.name)) : [],
         deadline: task.deadline ? task.deadline.slice(0, 16) : '',
         reminder: task.reminder ? task.reminder.slice(0, 16) : '',
@@ -74,16 +74,18 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
     setForm((f) => ({ ...f, tags: f.tags.filter((t) => t !== tag) }));
   };
 
+  const toRFC3339 = (v) => (v ? new Date(v).toISOString() : undefined);
+
   const handleSubmit = () => {
     const payload = {
       title: form.title,
       description: form.description || undefined,
       status: form.status,
       priority: form.priority,
-      projectId: form.projectId || undefined,
+      project_id: form.projectId || undefined,
       tags: form.tags,
-      deadline: form.deadline || undefined,
-      reminder: form.reminder || undefined,
+      deadline: toRFC3339(form.deadline),
+      reminder_before: form.reminder || undefined,
     };
     if (task) payload.id = task.id;
     onSubmit(payload);
@@ -116,7 +118,7 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
               <Select value={form.status} onChange={handleChange('status')} label="Статус">
                 {TASK_STATUSES.map((s) => (
                   <MenuItem key={s} value={s}>
-                    {s}
+                    {STATUS_LABELS[s] || s}
                   </MenuItem>
                 ))}
               </Select>
@@ -126,7 +128,7 @@ export default function TaskDialog({ open, onClose, onSubmit, task = null }) {
               <Select value={form.priority} onChange={handleChange('priority')} label="Приоритет">
                 {TASK_PRIORITIES.map((p) => (
                   <MenuItem key={p} value={p}>
-                    {p}
+                    {PRIORITY_LABELS[p] || p}
                   </MenuItem>
                 ))}
               </Select>

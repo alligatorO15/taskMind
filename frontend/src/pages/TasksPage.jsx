@@ -17,7 +17,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTasks, createTask, updateTask } from '../store/taskSlice';
 import { fetchProjects } from '../store/projectSlice';
-import { TASK_STATUSES, TASK_PRIORITIES } from '../constants';
+import { TASK_STATUSES, TASK_PRIORITIES, STATUS_LABELS, PRIORITY_LABELS } from '../constants';
 import TaskCard from '../components/TaskCard';
 import TaskDialog from '../components/TaskDialog';
 
@@ -120,7 +120,7 @@ export default function TasksPage() {
           >
             {STATUS_FILTER_OPTIONS.map((s) => (
               <MenuItem key={s || 'all'} value={s}>
-                {s || 'Все'}
+                {s ? (STATUS_LABELS[s] || s) : 'Все'}
               </MenuItem>
             ))}
           </Select>
@@ -134,7 +134,7 @@ export default function TasksPage() {
           >
             {PRIORITY_FILTER_OPTIONS.map((p) => (
               <MenuItem key={p || 'all'} value={p}>
-                {p || 'Все'}
+                {p ? (PRIORITY_LABELS[p] || p) : 'Все'}
               </MenuItem>
             ))}
           </Select>
